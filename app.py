@@ -47,9 +47,10 @@ config = {"configurable": {"thread_id": st.session_state.thread_id}}
 
 def load_thread_state(config):
     current = st.session_state.graph_app.get_state(config)
+    thread_state = new_initial_state()
     if current and current.values:
-        return dict(current.values)
-    return new_initial_state()
+        thread_state.update(dict(current.values))
+    return thread_state
 
 if "graph_app" not in st.session_state:
     st.session_state.graph_app = build_graph(api_key=api_key)
