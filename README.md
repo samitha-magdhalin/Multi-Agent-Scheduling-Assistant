@@ -191,5 +191,4 @@ Agent: "Sorry, 10:00 on 2026-07-14 is already booked. Available slots that
 | `.streamlit/config.toml` | Native Streamlit theme |
 | `requirements.txt` | Python dependencies |
 | `.env.example` | Template for required environment variables |
-#   M u l t i - A g e n t - S c h e d u l i n g - A s s i s t a n t  
- 
+#
