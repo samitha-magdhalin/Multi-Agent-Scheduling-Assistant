@@ -45,6 +45,12 @@ if "thread_id" not in st.query_params:
 st.session_state.thread_id = st.query_params["thread_id"]
 config = {"configurable": {"thread_id": st.session_state.thread_id}}
 
+def load_thread_state(config):
+    current = st.session_state.graph_app.get_state(config)
+    if current and current.values:
+        return dict(current.values)
+    return new_initial_state()
+
 if "graph_app" not in st.session_state:
     st.session_state.graph_app = build_graph(api_key=api_key)
 
@@ -58,6 +64,9 @@ if "display_messages" not in st.session_state:
         st.session_state.display_messages = list(current.values["messages"])
     else:
         st.session_state.display_messages = []
+
+thread_state = load_thread_state(config)
+example_user_input = None
 
 with st.sidebar:
     st.header("Session")
@@ -78,18 +87,39 @@ with st.sidebar:
         st.session_state.pop("display_messages", None)
         st.rerun()
     st.divider()
-    st.write(
-        "**Try:**\n"
-        "- \"Hi, what services does the clinic offer?\" (general)\n"
-        "- \"I'd like to book an appointment tomorrow at 10am, email me at a@b.com\"\n"
-        "- \"Book me for 2026-07-15 at 09:00, my email is jane@example.com\""
-    )
+
+    st.subheader("Booking summary")
+    if thread_state["date"] or thread_state["time"] or thread_state["email"]:
+        st.write(f"**Date:** {thread_state['date'] or '—'}")
+        st.write(f"**Time:** {thread_state['time'] or '—'}")
+        st.write(f"**Email:** {thread_state['email'] or '—'}")
+        if thread_state["stage"] == "confirmed":
+            st.success("✅ Booking confirmed")
+        elif thread_state["stage"] == "negotiating":
+            st.info("Waiting for your preferred alternative time or date.")
+        else:
+            st.info("Collecting booking details...")
+    else:
+        st.write("No booking details collected yet.")
+    st.divider()
+
+    st.subheader("Example questions")
+    if st.button("What services do you offer?"):
+        example_user_input = "Hi, what services does the clinic offer?"
+    if st.button("Book tomorrow at 10am"):
+        example_user_input = "I'd like to book an appointment tomorrow at 10am, email me at jane@example.com"
+    if st.button("Book 2026-07-15 at 09:00"):
+        example_user_input = "Book me for 2026-07-15 at 09:00, my email is jane@example.com"
 
 for msg in st.session_state.display_messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-user_input = st.chat_input("Type your message...")
+if example_user_input:
+    user_input = example_user_input
+else:
+    user_input = st.chat_input("Type your message...")
+
 if user_input:
     st.session_state.display_messages.append({"role": "user", "content": user_input})
     with st.chat_message("user"):
@@ -116,3 +146,11 @@ if user_input:
             st.session_state.graph_app.update_state(config, {"messages": full_messages})
 
     st.session_state.display_messages.append({"role": "assistant", "content": reply})
+
+    if result.get("stage") == "confirmed":
+        st.success("Your appointment is booked! Here are the details:")
+        st.write(f"**Date:** {result.get('date')}  ")
+        st.write(f"**Time:** {result.get('time')}  ")
+        st.write(f"**Email:** {result.get('email')}  ")
+        if "confirmation" in reply.lower():
+            st.caption(reply)
