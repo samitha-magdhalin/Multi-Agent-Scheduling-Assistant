@@ -6,13 +6,6 @@ scheduling for a fictional wellness clinic, **BrightPath Wellness Clinic**.
 It validates dates/times, negotiates alternatives when a slot is taken, and
 sends mock confirmations.
 
-## Screenshot
-
-![BrightPath Scheduling Assistant dashboard](screenshots/dashboard.png)
-
-*Chat interface showing the Triage Agent routing a general question, followed
-by the Booking Specialist confirming an appointment.*
-
 ## Tech Stack
 
 Python, Streamlit, LangGraph, LangChain Groq, Groq API, Llama 3.3 70B, SQLite, `dateparser`, Streamlit Community Cloud, Git, GitHub
