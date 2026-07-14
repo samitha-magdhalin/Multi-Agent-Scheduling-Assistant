@@ -128,12 +128,13 @@ for msg in st.session_state.display_messages:
         else:
             st.markdown(msg["content"])
 
-# --- Clickable example questions (only shown before the first message) ---
-if not st.session_state.display_messages:
-    st.write("**Try asking:**")
+# --- Clickable example questions: expanded by default before any messages,
+# collapsed (but still available) afterward — so they don't clutter an
+# ongoing conversation but are never fully lost. ---
+with st.expander("💡 Try an example question", expanded=not st.session_state.display_messages):
     cols = st.columns(len(EXAMPLE_QUESTIONS))
     for col, q in zip(cols, EXAMPLE_QUESTIONS):
-        if col.button(q, use_container_width=True):
+        if col.button(q, use_container_width=True, key=f"example_{q}"):
             ask_question(q)
             st.rerun()
 
